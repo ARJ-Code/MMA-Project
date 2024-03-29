@@ -1,31 +1,76 @@
 import random
-import exact
-
-class Test:
-    def __init__(self, a, b, c):
-        self.a = a
-        self.b = b
-        self.c = c
+import numpy as np
+import pulp
 
 
-test1 = [[10,-3,-3,4,0,0,0],[0,-5,0,0,0,0,0],[-10,0,0,0,2,8,0],[0,0,0,0,0,4,6]]
-test2 = [[0,0,4,-8,0,0],[0,0,0,8,-1,0],[0,0,6,0,0,-4],[0,0,0,0,0,6],[0,3,0,0,0,0],[-9,7,0,0,0,0]]
-test3 = [[0,-1,6,-7,0,0],[-6,0,0,0,-10,0],[0,0,0,0,-1,9],[8,0,-7,0,0,0],[0,0,10,0,0,0]]
-test4 = [[5,-9,0,0,0,5],[0,1,0,0,3,0],[0,-8,0,0,0,0],[-10,0,0,-1,0,0],[0,0,0,9,0,0],[-3,0,0,0,0,0]]
-test5 = [[0,0,0,3,0,-10],[-5,0,-8,0,0,6],[0,0,0,0,2,0],[0,0,0,0,3,4],[0,0,0,-4,0,0]]
+def generator_context_free(n: int, m: int):
+    q = [(0, m)]
 
-list_a = [test1,test2, test3, test4, test5] 
-tests = []
-for i in range (5):
-    list_b = []
-    list_c = []
-    for j in range (len(list_a[i])):
-        b = random.randint(-10,10)
-        c = random.randint(-10,10)
-        list_b.append(b)
-        list_c.append(c)
-    tests.append(Test(list_a[i],list_b,list_c))
+    matrix = np.zeros((n, m), dtype=int)
 
-solutions = []
-for i in range(len(tests)):
-    solutions.append(exact.Problem(tests[i].a, tests[i].b, tests[i].c).solve())
+    for i in range(n):
+        if len(q) == 0:
+            break
+        ind = random.randint(0, len(q)-1)
+
+        a, b = q[ind]
+        q.remove(q[ind])
+
+        k = random.randint(0, b-a)
+        samples = random.sample(range(a, b), k)
+
+        samples.sort()
+
+        for j in range(len(samples)-1):
+            l = samples[j]+1
+            r = samples[j+1]
+
+            if r-l > 0:
+                q.append((l, r))
+
+        for j in samples:
+            matrix[j][i] = 1
+
+    for i in range(n):
+        for j in range(m):
+            if matrix[i][j] == 0:
+                continue
+            matrix[i][j] = random.randint(-100, 100)
+
+    return matrix
+
+
+def generator_row2(n: int):
+    return np.random.rand(n, 2)
+
+
+def generator_positive_vector(n: int):
+    return np.random.randint(0, 1000, size=n)
+
+
+def generator_vector(n: int):
+    return np.random.rand(n)
+
+
+def solve_problem(matrix, c, b, n, m):
+    print(matrix)
+    print(c)
+    print(b)
+    prob = pulp.LpProblem('problem', pulp.LpMaximize)
+
+    x = pulp.LpVariable.dicts('x', range(n), cat='Binary')
+
+    prob += pulp.lpSum([v * x[i] for i, v in enumerate(c)])
+
+    for i in range(m):
+        prob += pulp.lpSum([matrix[i, j] * x[j] for j in range(n)]) >= b[i]
+
+    prob.solve()
+
+    print("Estado:", pulp.LpStatus[prob.status])
+    for v in prob.variables():
+        print(v.name, "=", v.varValue)
+
+
+solve_problem(generator_context_free(100, 100), generator_vector(
+    100), generator_positive_vector(100), 100, 100)
