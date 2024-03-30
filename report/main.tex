@@ -53,7 +53,7 @@ se basa en la teoría de lenguajes formales y autómatas. En este trabajo se pro
 En [1], se transforma el una fórmula booleana en una lista de instancias de variables, donde se asume que 2 instancias de una variable no tienen por que
 tener el mismo valor de verdad. Luego se define un autómata que dada una cadena de 0 y 1 y una fórmula booleana, determina si se obtiene un valor de verdad para 
 la fórmula booleana donde cada instancia de una variable toma el valor de verdad que se corresponde con la cadena de 0 y 1. Entonces para verificar 
-que 2 instancias de una variable tengan el mismo valor de verdad se intercepta dicho autómata con una gramática libre del contexto obteniendo una autómata de pila.
+que 2 instancias de una variable tengan el mismo valor de verdad se intersecta dicho autómata con una gramática libre del contexto obteniendo una autómata de pila.
 Después de esto se plantea un algoritmo para dado este autómata de pila, generar todas las posibles cadenas de 0 y 1 que se corresponden con una asignación de valores de verdad y 
 como consecuencia se obtiene un  generador de todas las posibles asignaciones de valores de verdad para una fórmula booleana. Luego para determinar si la fórmula es satisfacible
 solo queda verificar si este conjunto de soluciones es no vacío.
@@ -62,7 +62,7 @@ Una fórmula booleana se considera libre del contexto si para cualquier par de i
 $x_k$ con $i<k<j$ entonces todas las instancias de esta nueva variable ocurren entre $x_i$ y $x_j$. 
 
 El problema antes planteado ha sido generalizado en [2] y [3] donde en vez de una gramática libre del contexto se usa una gramática de concatenación de rango y gramáticas matriciales simples
-respectivamente, para ser interceptadas con el autómata booleano y al igual que en [1] obtener una mecanismo generador de soluciones que satisfacen la fórmula booleana.
+respectivamente, para ser intersectadas con el autómata booleano y al igual que en [1] obtener una mecanismo generador de soluciones que satisfacen la fórmula booleana.
 
 \section*{Planteamiento del problema}
 
@@ -95,7 +95,7 @@ Sujeto a las restricciones:
     \sum_{i = 1}^{n} b_{j,i}x_i \geq 1, \quad j = 1, 2, ..., m
 \end{equation}
 
-donde los $b_{j,i}$ son 0 o 1 y además se cumple para si todo $k$ entre 1 y $n$ existen $i$ y $j$ tal que $b_{i,k} = 1$ y $b_{j,k} = 1$, $p\neq k$, 
+donde los $b_{j,i}$ son 0 o 1 y además se cumple para todo $k$ entre 1 y $n$ existen $i$ y $j$ tal que $b_{i,k} = 1$ y $b_{j,k} = 1$, $p\neq k$, 
 $z$ tal que $i<k<j$ y $b_{z,p} = 1$ entonces no existe $q$ con $q<i \lor j>q$ tal que $b_{q,k}=1$.
 
 Las restricciones de dicho problema de optimización se pueden plantear con un SAT libre del contexto (resultado obtenido en [1]) de la siguiente
@@ -120,12 +120,129 @@ implica una mayor complejidad.
     
 \subsection*{Generalización del problema libre del contexto}
 
-% \section*{Análisis con métodos clásicos}
+El problema descrito en la sección anterior fue una transformación explícita del problema planteado en [1] para un problema de optimización.
+Ahora planteemos un nuevo problema de optimización con menos restricciones que el anterior y usaremos la misma idea que en [1] pero cambiando
+el autómata.
+
+Sea $x_1, x_2, ..., x_n$ un conjunto de variables binarias. Se desea minimizar la función objetivo:
+
+\begin{equation}
+    f(x_1, x_2, ..., x_n) = c_1x_1 + c_2x_2 + ... + c_nx_n
+\end{equation}
+
+Sujeto a las restricciones:
+
+\begin{equation}
+    \sum_{i = 1}^{n} b_{j,i}x_i \geq a_j, \quad j = 1, 2, ..., m
+\end{equation}
+
+donde $b_{i,j}\in Z$ y además se cumple para todo $k$ entre 1 y $n$ existen $i$ y $j$ tal que $b_{i,k} = 1$ y $b_{j,k} = 1$, $p\neq k$, 
+$z$ tal que $i<k<j$ y $b_{z,p} = 1$ entonces no existe $q$ con $q<i \lor j>q$ tal que $b_{q,k}=1$.
+
+La restricción eliminada no nos obliga a que los $b_{j,i}$ tomen valores 0 o 1. Por tanto el autómata booleano planteado en [1] no nos sirve para
+reconocer si una cadena de 0 y 1 satisface una restricción pero si hemos mantenido el orden libre del contexto de los $x_i$.
+
+Ahora diseñemos un autómata que reconozca el lenguaje de las cadenas binarias que satisfacen una restricción de del tipo:
+
+\begin{equation}
+    \sum_{i = 1}^{n} b_{i}x_i \geq a
+\end{equation}
+
+Para ello respetemos el diseño seguido en [1] para la construcción del autómata booleano, la cual exige conocer para cada instancia de una variable
+$x_i$ el estado que esta representa en el autómata. Ahora los estados de=l nuevo autómata representarán tuplas $(i,k)$ donde $i$ es el índice de la variable
+actual y $k$ es la suma acumulada hasta el momento, luego para cada variable $x_i$ el autómata tendrá $p+q$ estados donde 
+
+\begin{equation}
+    p=max(\sum_{j = 1}^{n} b_{j}x_j \forall j<i)    
+\end{equation}
+
+\begin{equation}
+    -q=min(\sum_{j = 1}^{n} b_{j}x_j \forall j<i)    
+\end{equation}
+
+para todas las posibles cadenas binarias. El estado inicial sería $q$ y las transiciones se definen de la siguiente manera:
+
+\begin{equation}
+    f(q,1)=q_{0,k+b_{0}}
+\end{equation}
+
+\begin{equation}
+    f(q,0)=q_{0,b_{0}}
+\end{equation}
+
+\begin{equation}
+    f(q_{i,k},1)=q_{i+1,k+b_{i+1}}
+\end{equation}
+
+\begin{equation}
+    f(q_{i,k},0)=q_{i+1,b_{i+1}}
+\end{equation}
+
+y los estados finales serían los $q_{n,j} \forall j\geq k$. 
+
+El autómata planteado anteriormente tiene una cantidad de estados en el orden de $n\cdot(p+q)$, donde $p$ y $-q$ son los valores de la suma máxima
+y mínima para todas las cadenas respectivamente, por lo que la complejidad de temporal de la construcción de dicho autómata es $O(n\cdot(p+q))$ lo cual 
+impone otra restricción a nuestro problema ya que debemos garantizar que el valor de $p+q$ no sea un número muy grande ya que el algoritmo de construcción
+del autómata es un algoritmo pseudo-polinomial.
+
+Ahora procedemos igual que en [1] a intersectar el autómata con una gramática libre del contexto y obtener un mecanismo generador de soluciones factibles
+para nuestro problema de optimización y siguiendo el método planteado en la sección anterior obtener el valor mínimo de la función objetivo mediante la ponderación
+del grafo resultante y la ejecución del algoritmo de Dijkstra.
+
+\section*{Transformación de un problema de optimización en un problema de optimización libre del contexto}
+
+Sería interesante obtener un algoritmo que permita reordenar las restricciones de un problema de optimización general a un problema de optimización
+libre del contexto planteado en la sección anterior. En este trabajo no expondremos ningún algoritmo para ello pero si ejemplificaremos un caso particular
+donde esto es posible. 
+
+Sea $x_1, x_2, ..., x_n$ un conjunto de variables binarias. Se desea minimizar la función objetivo:
+
+\begin{equation}
+    f(x_1, x_2, ..., x_n) = c_1x_1 + c_2x_2 + ... + c_nx_n
+\end{equation}
+
+Sujeto a las restricciones:
+
+\begin{equation}
+    \sum_{i = 1}^{n} b_{j,i}x_i \geq a_j, \quad j = 1, 2
+\end{equation}
+
+podemos reordenar las restricciones del problema de la siguiente manera:
+
+\begin{equation}
+    b_{1,1}x_1+b_{1,2}x_2+...+b_{1,n}x_n \geq a_1,
+\end{equation}
+
+\begin{equation}
+    b_{2,2}x_n+b_{2,n-1}x_{n-1}+...+b_{2,1}x_1 \geq a_2,
+\end{equation}
+
+como puede observarse con este reordenamiento garantizamos que las instancias de los $x_i$ sigan un orden libre del contexto, luego podemos proceder 
+a encontrar el mínimo valor de la función objetivo siguiendo el procedimiento descrito en la sección anterior.
+
+
+\section*{Análisis con métodos clásicos}
+
+\section*{Recomendaciones}
+
+Para futuros trabajos sobre el tema sería interesante plantear los problemas de optimización que se derivan de [2] y [3], los cuales serían generalizaciones
+del problema descrito en este trabajo, ya que el mecanismo reconocedor empleado en ambos casos tiene un poder superior a la gramática libre del contexto empleada
+en [1] y además el autómata planteado en este trabajo se ajusta a las características del autómata booleano empleado en [2] y [3].
+
+Además sería interesante diseñar algoritmos de reordenamiento de las restricciones para transformarlas en un orden libre del contexto como se analiza en este trabajo
+o cualquier otro mecanismo reconocedor de la teoría de lenguajes que permita seguir las mismas ideas.
 
 \section*{Referencias}
 
-[1] A. Fernández Arias, "El Problema de la
-Satisfacibilidad Booleana Libre del Contexto.
-Un Algoritmo polinomial.," La Habana, 2007.
 
+\begin{enumerate}
+    \item[[ 1]] Alina Fernández Arias, "El Problema de la
+    Satisfacibilidad Booleana Libre del Contexto.
+    Un Algoritmo polinomial.," La Habana, 2007.
+    \item[[ 2]] Manuel Aguilera López, "Problema de la Satisfacibilidad Booleana de Concatenación de Rango Simple". Jornada Científica Estudiantil MATCOM 2016
+    \item[[ 3]] José Jorge Rodríguez Salgado, Informe de las Prácticas Laborales: Gramáticas Matriciales
+    Simples. Primera aproximación para una solución al
+    problema SAT, 2019    
+\end{enumerate}
+ 
 \end{document}
