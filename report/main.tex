@@ -29,7 +29,7 @@
 
 
 \section*{Introducción}
-Los problemas de optimización en enteros son una rama de la optimización matemática que se ocupa de encontrar soluciones óptimas a problemas 
+Los problemas de optimización en enteros (POE) son una rama de la optimización matemática que se ocupa de encontrar soluciones óptimas a problemas 
 donde las variables de decisión solo pueden tomar valores enteros. Estos problemas se encuentran en una amplia variedad de áreas, como:
 
 \begin{itemize}
@@ -222,6 +222,23 @@ a encontrar el mínimo valor de la función objetivo siguiendo el procedimiento 
 
 
 \section*{Análisis con métodos clásicos}
+
+En esta sección se mostrará un análisis experimental sobre los métodos clásicos existentes para resolver los problemas de optimización antes
+planteados, para ello se utilizará \textbf{python} como lenguaje de programación y la biblioteca \href{https://pypi.org/project/PuLP/}{pulp} del mismo 
+que cuenta con varios métodos optimización implementados (el código fuente se encuentra en el repositorio de \href{https://github.com/ARJ-Code/MMA-Project}{github}).
+
+Primeramente se trató de crear un generador de problemas de optimización libres del contexto, aunque se logró una implementación del mismo en la mayoría
+de los casos el conjunto de restricciones factibles era vacío por lo que se optó por crear ejemplos de manera manual.
+
+En todos los ejemplos del problema de optimización generar el algoritmo empleado por \href{https://pypi.org/project/PuLP/}{pulp} logró resolver el problema
+de forma rápida y eficiente, por lo q por esta parte no se encontró una mejora a los métodos clásicos por parte del algoritmo propuesto en este trabajo.
+
+Por otro lado si se logró programar un generador de problemas de optimización para el caso del reordenamiento de variables expuesto en la sección anterior.
+En este caso se generaron 1000 matrices aleatorias de 2x1000 junto a sus respectivas restricciones y función objetivo en todos los casos nuevamente el algoritmo
+propuesto en este trabajo no presenta mejores sobre los métodos clásicos.
+
+Con lo experimentado claramente se demuestra que en la práctica lo planteado en este trabajo no es realmente factible ya que los problemas de este estilo 
+no son realmente comunes y en caso de aparecer los métodos clásicos son eficientes para resolverlos.
 
 \section*{Recomendaciones}
 

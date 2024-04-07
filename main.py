@@ -41,7 +41,7 @@ def generator_context_free(n: int, m: int):
 
 
 def generator_row2(n: int):
-    return np.random.rand(n, 2)
+    return np.random.randint(-1000, 1000, size=(2, n))
 
 
 def generator_positive_vector(n: int):
@@ -49,13 +49,10 @@ def generator_positive_vector(n: int):
 
 
 def generator_vector(n: int):
-    return np.random.rand(n)
+    return np.random.randint(-100000, 100000, size=n)
 
 
-def solve_problem(matrix, c, b, n, m):
-    print(matrix)
-    print(c)
-    print(b)
+def solve_problem(matrix, c, b, n, m, row2=False):
     prob = pulp.LpProblem('problem', pulp.LpMaximize)
 
     x = pulp.LpVariable.dicts('x', range(n), cat='Binary')
@@ -67,10 +64,42 @@ def solve_problem(matrix, c, b, n, m):
 
     prob.solve()
 
-    print("Estado:", pulp.LpStatus[prob.status])
-    for v in prob.variables():
-        print(v.name, "=", v.varValue)
+    return pulp.LpStatus[prob.status] == 'Optimal'
 
 
-solve_problem(generator_context_free(100, 100), generator_vector(
-    100), generator_positive_vector(100), 100, 100)
+m1 = np.array([[10, -3, -3, 4, 0, 0, 0],
+              [0, -5, 0, 0, 0, 0, 0],
+               [-10, 0, 0, 0, 2, 8, 0],
+               [0, 0, 0, 0, 0, 4, 6]])
+b1 = [3, -2, 5, 3]
+c1 = [7, 69, 8, 0, -44, 35, -23]
+
+m2 = np.array([[0, 0, 4, -8, 0, 0],
+               [0, 0, 0, 8, -1, 0],
+               [0, 0, 6, 0, 0, -4],
+               [0, 0, 0, 0, 0, 6],
+               [0, 3, 0, 0, 0, 0],
+               [-9, 7, 0, 0, 0, 0]])
+
+b2 = [2, -2, 2, 3, 0, -2]
+c2 = [72, -169, -8, -120, -44, 35]
+
+
+m3 = np.array([[0, -1, 6, -7, 0, 0],
+               [-6, 0, 0, 0, -10, 0],
+               [0, 0, 0, 0, -1, 9],
+               [8, 0, -7, 0, 0, 0],
+               [0, 0, 10, 0, 0, 0]])
+
+b3 = [5, -6, 6, 1, 0]
+c3 = [-1372, 2169, -228, -120, -44, 122]
+
+solve_problem(m1, c1, b1, 7, 4)
+solve_problem(m2, c2, b2, 6, 6)
+solve_problem(m3, c3, b3, 6, 5)
+
+c = 0
+for _ in range(1000):
+    c += solve_problem(generator_row2(1000), generator_vector(
+        1000), generator_vector(2), 1000, 2)
+print(c)
