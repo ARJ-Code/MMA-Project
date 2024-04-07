@@ -4,6 +4,8 @@
 \usepackage{titling}
 \usepackage{float}
 \usepackage[text={18cm,21cm},centering]{geometry}
+\usepackage{hyperref} \hypersetup{ colorlinks=true, linkcolor=blue, filecolor=magenta,
+urlcolor=blue, }
 
 \begin{document}
 
@@ -47,10 +49,10 @@ herramientas de teoría de lenguajes formales y autómatas.
 
 \section*{Antecedentes}
 
-Este trabajo se basa en los resultados obtenidos en [1], en el cual de plantea un algoritmo polinomial para resolver el problema de la satisfacibilidad booleana libre del contexto, el cual
+Este trabajo se basa en los resultados obtenidos en [1], en el cual se plantea un algoritmo polinomial para resolver el problema de la satisfacibilidad booleana libre del contexto, el cual
 se basa en la teoría de lenguajes formales y autómatas. En este trabajo se propone una adaptación a este problema para resolver problemas de optimización en enteros.
 
-En [1], se transforma el una fórmula booleana en una lista de instancias de variables, donde se asume que 2 instancias de una variable no tienen por que
+En [1], se transforma una fórmula booleana en una lista de instancias de variables, donde se asume que 2 instancias de una variable no tienen por qué
 tener el mismo valor de verdad. Luego se define un autómata que dada una cadena de 0 y 1 y una fórmula booleana, determina si se obtiene un valor de verdad para 
 la fórmula booleana donde cada instancia de una variable toma el valor de verdad que se corresponde con la cadena de 0 y 1. Entonces para verificar 
 que 2 instancias de una variable tengan el mismo valor de verdad se intersecta dicho autómata con una gramática libre del contexto obteniendo una autómata de pila.
@@ -66,7 +68,7 @@ respectivamente, para ser intersectadas con el autómata booleano y al igual que
 
 \section*{Planteamiento del problema}
 
-Para utilizar el algoritmo propuesto en [1] para resolver problemas de optimización en enteros, una fórmula booleana a una restricción de un problema
+Para utilizar el algoritmo propuesto en [1] para resolver problemas de optimización en enteros, una fórmula booleana puede ser interpretada como una restricción de un problema
 de optimización en enteros. Por ejemplo sea la fórmula booleana:
 
 \begin{equation}
@@ -95,8 +97,8 @@ Sujeto a las restricciones:
     \sum_{i = 1}^{n} b_{j,i}x_i \geq 1, \quad j = 1, 2, ..., m
 \end{equation}
 
-donde los $b_{j,i}$ son 0 o 1 y además se cumple para todo $k$ entre 1 y $n$ existen $i$ y $j$ tal que $b_{i,k} = 1$ y $b_{j,k} = 1$, $p\neq k$, 
-$z$ tal que $i<k<j$ y $b_{z,p} = 1$ entonces no existe $q$ con $q<i \lor j>q$ tal que $b_{q,k}=1$.
+donde los $b_{j,i}$ son 0 o 1. Además se cumple para todo $k$ entre 1 y $n$ que si existen $i$, $j$, $z$ y $p$ tal que $b_{i,k} = 1$, $b_{j,k} = 1$ y $b_{z,p} = 1$, tal que $i\leq z\leq j$ y $p\neq k$ entonces no existe $q$ con $q<i \lor j>q$ tal que $b_{q,p}=1$, 
+en el caso de que $i=z$ se debe cumplir que $p>k$ y en el caso de que de que $j=z$ se debe cumplir que $p<k$.
 
 Las restricciones de dicho problema de optimización se pueden plantear con un SAT libre del contexto (resultado obtenido en [1]) de la siguiente
 manera:
@@ -109,7 +111,7 @@ para este SAT se obtiene una gramática libre del contexto que genera todas las 
 que para nuestro problema de optimización se traduce en todas las posibles asignaciones de valores que satisfacen las restricciones.
 
 Dicha gramática como se demuestra en [1] es un grafo acíclico dirigido, donde cada arista representa una producción y a su vez un valor de verdad
-para cada instancia de una variable. Luego para obtener el valor mínimo de la función objetivo se puede ponderar cada arista que represente la primera instancias
+para cada instancia de una variable. Luego para obtener el valor mínimo de la función objetivo se puede ponderar cada arista que represente la primera instancia
 de una variable con el valor de la función objetivo para dicha instancia y el resto de las aristas con 0. Luego identificar los estados nodos que representan los estados finales de la gramática 
 y usar un algoritmo para minimizar el costo de llegar desde el distinguido a los estados finales.
 
@@ -136,20 +138,20 @@ Sujeto a las restricciones:
     \sum_{i = 1}^{n} b_{j,i}x_i \geq a_j, \quad j = 1, 2, ..., m
 \end{equation}
 
-donde $b_{i,j}\in Z$ y además se cumple para todo $k$ entre 1 y $n$ existen $i$ y $j$ tal que $b_{i,k} = 1$ y $b_{j,k} = 1$, $p\neq k$, 
-$z$ tal que $i<k<j$ y $b_{z,p} = 1$ entonces no existe $q$ con $q<i \lor j>q$ tal que $b_{q,k}=1$.
+donde los $b_{j,i}\in Z$. Además se cumple para todo $k$ entre 1 y $n$ que si existen $i$, $j$, $z$ y $p$ tal que $b_{i,k} \neq 0$, $b_{j,k} \neq 0$ y $b_{z,p} \neq 0$, tal que $i\leq z\leq j$ y $p\neq k$ entonces no existe $q$ con $q<i \lor j>q$ tal que $b_{q,p}\neq 0$, 
+en el caso de que $i=z$ se debe cumplir que $p>k$ y en el caso de que de que $j=z$ se debe cumplir que $p<k$.
 
 La restricción eliminada no nos obliga a que los $b_{j,i}$ tomen valores 0 o 1. Por tanto el autómata booleano planteado en [1] no nos sirve para
 reconocer si una cadena de 0 y 1 satisface una restricción pero si hemos mantenido el orden libre del contexto de los $x_i$.
 
-Ahora diseñemos un autómata que reconozca el lenguaje de las cadenas binarias que satisfacen una restricción de del tipo:
+Ahora diseñemos un autómata que reconozca el lenguaje de las cadenas binarias que satisfacen una restricción del tipo:
 
 \begin{equation}
     \sum_{i = 1}^{n} b_{i}x_i \geq a
 \end{equation}
 
 Para ello respetemos el diseño seguido en [1] para la construcción del autómata booleano, la cual exige conocer para cada instancia de una variable
-$x_i$ el estado que esta representa en el autómata. Ahora los estados de=l nuevo autómata representarán tuplas $(i,k)$ donde $i$ es el índice de la variable
+$x_i$ el estado que esta representa en el autómata. Ahora los estados del nuevo autómata representarán tuplas $(i,k)$ donde $i$ es el índice de la variable
 actual y $k$ es la suma acumulada hasta el momento, luego para cada variable $x_i$ el autómata tendrá $p+q$ estados donde 
 
 \begin{equation}
@@ -160,14 +162,14 @@ actual y $k$ es la suma acumulada hasta el momento, luego para cada variable $x_
     -q=min(\sum_{j = 1}^{n} b_{j}x_j \forall j<i)    
 \end{equation}
 
-para todas las posibles cadenas binarias. El estado inicial sería $q$ y las transiciones se definen de la siguiente manera:
+para todas las posibles cadenas binarias. El estado inicial sería $q_{0,0}$ y las transiciones se definen de la siguiente manera:
 
 \begin{equation}
-    f(q,1)=q_{0,k+b_{0}}
+    f(q_{0,0},1)=q_{1,b_{1}}
 \end{equation}
 
 \begin{equation}
-    f(q,0)=q_{0,b_{0}}
+    f(q_{0,0},0)=q_{1,0}
 \end{equation}
 
 \begin{equation}
@@ -175,10 +177,10 @@ para todas las posibles cadenas binarias. El estado inicial sería $q$ y las tra
 \end{equation}
 
 \begin{equation}
-    f(q_{i,k},0)=q_{i+1,b_{i+1}}
+    f(q_{i,k},0)=q_{i+1,k}
 \end{equation}
 
-y los estados finales serían los $q_{n,j} \forall j\geq k$. 
+y los estados finales serían los $q_{n,k} \forall k\geq a$. 
 
 El autómata planteado anteriormente tiene una cantidad de estados en el orden de $n\cdot(p+q)$, donde $p$ y $-q$ son los valores de la suma máxima
 y mínima para todas las cadenas respectivamente, por lo que la complejidad de temporal de la construcción de dicho autómata es $O(n\cdot(p+q))$ lo cual 
@@ -214,7 +216,7 @@ podemos reordenar las restricciones del problema de la siguiente manera:
 \end{equation}
 
 \begin{equation}
-    b_{2,2}x_n+b_{2,n-1}x_{n-1}+...+b_{2,1}x_1 \geq a_2,
+    b_{2,n}x_n+b_{2,n-1}x_{n-1}+...+b_{2,1}x_1 \geq a_2,
 \end{equation}
 
 como puede observarse con este reordenamiento garantizamos que las instancias de los $x_i$ sigan un orden libre del contexto, luego podemos proceder 
@@ -231,10 +233,10 @@ Primeramente se trató de crear un generador de problemas de optimización libre
 de los casos el conjunto de restricciones factibles era vacío por lo que se optó por crear ejemplos de manera manual.
 
 En todos los ejemplos del problema de optimización generar el algoritmo empleado por \href{https://pypi.org/project/PuLP/}{pulp} logró resolver el problema
-de forma rápida y eficiente, por lo q por esta parte no se encontró una mejora a los métodos clásicos por parte del algoritmo propuesto en este trabajo.
+de forma rápida y eficiente, por lo que por esta parte no se encontró una mejora a los métodos clásicos por parte del algoritmo propuesto en este trabajo.
 
 Por otro lado si se logró programar un generador de problemas de optimización para el caso del reordenamiento de variables expuesto en la sección anterior.
-En este caso se generaron 1000 matrices aleatorias de 2x1000 junto a sus respectivas restricciones y función objetivo en todos los casos nuevamente el algoritmo
+En este caso se generaron 1000 matrices aleatorias de 2x1000 junto a sus respectivas restricciones y función objetivo, en todos los casos nuevamente el algoritmo
 propuesto en este trabajo no presenta mejores sobre los métodos clásicos.
 
 Con lo experimentado claramente se demuestra que en la práctica lo planteado en este trabajo no es realmente factible ya que los problemas de este estilo 
